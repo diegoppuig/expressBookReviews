@@ -44,16 +44,18 @@ if (authenticatedUser(username, password)) {
     let accessToken = jwt.sign({
         pw: password,
     },
-    "acess",
+    "access",
     {expiresIn: 60*60 }
     );
     //Create the user's session.
-    req.session.authenticated = {
+    req.session.authorization = {
         accessToken,
         username,
     };
 
-    return res.status(200).send("User successfully logged in.")
+    return res.status(200).send({
+        message: "User successfully logged in."
+      });
 } else {
     return res
     .status(208)
@@ -66,10 +68,25 @@ if (authenticatedUser(username, password)) {
 
 
 // Add a book review
-regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
-});
+regd_users.put("/auth/review/:isbn/", (req, res) => {
+    const bookISBN = req.params.isbn;
+    const userReview = req.query.review;
+    
+    // Get the user.
+    const currentUser = req.session.authorization.username;
+  
+    // Get all the book reviews for the given ISBN.
+    let bookReviews = books[bookISBN].reviews;
+    
+      // If there is an existing review, just modify it with the new one.
+      if (bookISBN && userReview) {
+        bookReviews[currentUser] = userReview;
+        
+      }
+   
+    
+    res.send("The user's review has been added/updated successfully.");
+  });
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
