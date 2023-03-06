@@ -34,6 +34,19 @@ public_users.get('/',function (req, res) {
   res.send(JSON.stringify(books));
 });
 
+//10 - get avaliable books in the shop
+public_users.get("/async", function (req, res) {
+    const getBooks = new Promise((resolve, reject) => {
+      resolve({ books });
+    });
+  
+    getBooks.then((data) => {
+      console.log("Promise is here.");
+      res.send(JSON.stringify(data));
+    });
+  });
+
+
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   //Write your code here
@@ -41,7 +54,24 @@ public_users.get('/isbn/:isbn',function (req, res) {
   res.send(books[bookIsbn]);
  });
   
-// Task 3: Get book details based on author
+// 11 - Implement a promise for getting book details based on ISBN
+public_users.get("/async/isbn/:isbn", function (req, res) {
+    // Promise to get the book.
+    const getBook = new Promise((resolve, reject) => {
+      const bookISBN = req.params.isbn;
+      const book = books[bookISBN];
+      if (book) {
+        resolve(book);
+      } else {
+        reject("Book not found.");
+      }
+    });
+  
+    getBook.then((book) => res.send(book))
+      .catch((error) => res.status(404).send(error));
+  });
+
+// 3 - Get book details based on author
 public_users.get("/author/:author", function (req, res) {
     const author = req.params.author;
   
@@ -57,6 +87,28 @@ public_users.get("/author/:author", function (req, res) {
     }
     res.send(finalBooks);
   });
+
+
+// 12 - Promise get book details/author
+public_users.get("/async/author/:author", function (req, res) {
+    const getAuthorsBooks = new Promise(() => {
+      const author = req.params.author;
+    
+      //keys.
+      const allBooksByAuthor = Object.entries(books);
+      const finalBooks = [];
+    
+      // values that match the given author.
+      for (const [key, value] of allBooksByAuthor) {
+        if (value.author === author) {
+          finalBooks.push(value);
+        }
+      }
+      res.send(finalBooks);
+    })
+  
+  });
+
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
@@ -75,8 +127,27 @@ public_users.get('/title/:title',function (req, res) {
   res.send(finalBooks)
 });;
 
+// 13 - Promise get all books based on title
+public_users.get("/async/title/:title", function (req, res) {
+    const getBookTitles = new Promise(() => {
+      const title = req.params.title;
+    
+      // Keys.
+      const allBooksByTitle = Object.entries(books);
+      const finalBooks = [];
+    
+      // Vvalues that match given the title.
+      for (const [key, value] of allBooksByTitle) {
+        if (value.title === title) {
+          finalBooks.push(value);
+        }
+      }
+      res.send(finalBooks);
+    });
+  
+  });
 
-//  Get book review
+// 5 -   Get book review
 public_users.get("/review/:isbn", function (req, res) {
     const bookIsbn = req.params.isbn;
     // Get the book reviews for the given ISBN.
